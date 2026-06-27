@@ -1,10 +1,14 @@
 #include "../include/RedisServer.h"
+#include "../include/RedisCommandHandler.h"
 #include <iostream>
 // #include<sys/socket.h> this is for linux not windows
 #include <winsock2.h> // windows equivalent for socket API's
 #include<unistd.h> // also for linux but mingw provides, its for POSIX programming
 //#include<netinet/in.h> // for linux, used to tell machine about network which IP family, which port etc
 #include <ws2tcpip.h> // windows eq of netinet
+#include<vector>
+#include<thread>
+#include<cstring>
 
 static RedisServer* globalServer = nullptr;
 
@@ -60,6 +64,58 @@ void RedisServer::run(){
     }
 
     std::cout<<"Server listening on port "<<port<<"\n";
+
+    std::vector<std::thread> threads;
+
+    // object
+    RedisCommandHandler cmdHandler;
+
+    while(running){
+        int client_socket = accept(server_socket, nullptr, nullptr);
+        if(client_socket<0){
+            if(running){
+                std::cerr << "Client Socket connection failed! \n";
+            }else{
+                std::cerr<<"Socket closing so client connection rejected \n";
+            }
+            break;
+        }
+
+        // emplace back constructs an object and passes the values to the functions params
+        // here the lambda is passes to the constructor and the whole object is pushed back into the vector
+        threads.emplace_back([client_socket, &cmdHandler]() {
+            char buffer[1024];
+            while(true){
+                memset(buffer, 0, sizeof(buffer));
+                int bytes = recv(client_socket, buffer, sizeof(buffer)-1, 0);
+                if(bytes==0){
+                    //No more data will ever come from here
+                    //TCP Fin packet is 0
+                    std::cout<<"Client disconnected \n";
+                    close(client_socket);
+                    break;
+                }   
+                else if(bytes < 0){
+                    //caused by network failure, invalid socket..etc
+                    perror("recv");
+                    break;
+                }
+
+                std::string request(buffer, bytes);
+                std::string response = cmdHandler.processCommand(request);
+                send(client_socket, response.c_str(), bytes, 0);
+            }
+            close(client_socket);
+        });
+        
+        for(auto &t:threads){
+            if(t.joinable()){
+                t.join();
+            }
+        }
+
+        //shutdownj
+    }
 
 };
 
