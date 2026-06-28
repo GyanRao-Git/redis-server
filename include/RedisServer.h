@@ -12,6 +12,7 @@ public:
     RedisServer(int port);
     void run();
     void shutdown();
+    void setupSignalHandler();
 private:
     int port;
     int server_socket;

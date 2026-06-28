@@ -9,14 +9,29 @@
 #include<vector>
 #include<thread>
 #include<cstring>
+#include <signal.h>
 
 static RedisServer* globalServer = nullptr;
+
+void signalHandler(int signum){
+    if(globalServer){
+        std::cout<< "Caught Signal "<< signum << " Shutting down ... \n";
+        globalServer->shutdown();
+    }
+    exit(signum);
+}
+
+void RedisServer::setupSignalHandler(){
+    signal(SIGINT, signalHandler);
+}
+
 
 
 // : is a member initializer list 
 // :: is scope resolution operator
 RedisServer::RedisServer (int port) : port(port), server_socket(-1), running(true){
     globalServer = this; // current object
+    setupSignalHandler();
 };
 
 void RedisServer::shutdown (){
