@@ -1,0 +1,5 @@
+#ifndef REDIS_DATABASE_H
+#define REDIS_DATABASE_H
+
+is a guard, when every file where class is imported, the code is copied and class is defined so we guard it with a variable
+
