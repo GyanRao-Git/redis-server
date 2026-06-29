@@ -1,4 +1,5 @@
 #include "../include/RedisCommandHandler.h"
+#include "../include/RedisDatabase.h"
 #include <vector>
 #include <sstream>
 #include<algorithm>
@@ -21,7 +22,7 @@ std::vector<std::string> parseNonResp (const std::string input){
     return ans;
 }
 
-std::vector<std::string> parseResp (const std::string input){
+std::vector<std::string> parseResp (const std::string &input){
     std::vector<std::string> tokens;
     if(input.empty()) return tokens;
 
@@ -69,7 +70,7 @@ std::vector<std::string> parseResp (const std::string input){
 
         std::string token = "";
         while(len--){
-            if(len>=input.size()) break;
+            if(pos>=input.size()) break;
             token += input[pos++];
         }
         tokens.push_back(token);
@@ -84,7 +85,7 @@ RedisCommandHandler::RedisCommandHandler(){
 };
 
 
-std::string processCommand(const std::string& commandLine){
+std::string RedisCommandHandler::processCommand(const std::string& commandLine){
     auto tokens = parseResp(commandLine);
     if(tokens.empty()) return "-ERR: Empty Command\r\n";
 
@@ -92,6 +93,18 @@ std::string processCommand(const std::string& commandLine){
     std::transform(cmd.begin(),cmd.end(), cmd.begin(), ::toupper);
 
     std::ostringstream res;
+
+    // RedisDatabase&db = RedisDatabase::getInstance();
+
+    if (cmd == "PING") {
+        res << "+PONG\r\n";
+    }
+    else if (cmd == "ECHO") {
+        res << "TBD\r\n";
+    }
+    else {
+        res << "-ERR: Unknown Command\r\n";
+    }
 
     std::string response = res.str();
     return response;

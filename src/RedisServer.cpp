@@ -1,5 +1,7 @@
 #include "../include/RedisServer.h"
 #include "../include/RedisCommandHandler.h"
+#include "../include/RedisDatabase.h"
+#include "../include/Config.h"
 #include <iostream>
 // #include<sys/socket.h> this is for linux not windows
 #include <winsock2.h> // windows equivalent for socket API's
@@ -27,7 +29,7 @@ void RedisServer::setupSignalHandler(){
 
 
 
-// : is a member initializer list 
+// : is a member initializer list
 // :: is scope resolution operator
 RedisServer::RedisServer (int port) : port(port), server_socket(-1), running(true){
     globalServer = this; // current object
@@ -127,10 +129,8 @@ void RedisServer::run(){
             if(t.joinable()){
                 t.join();
             }
-        }
-
-        //shutdownj
     }
 
+    // Before shutting down persist the db. Note: 'fileName' is not defined in this snippet.
+    // RedisDatabase::dumpIntoDb(fileName);
 };
-

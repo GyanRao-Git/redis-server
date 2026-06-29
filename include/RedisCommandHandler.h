@@ -10,7 +10,7 @@ public:
     RedisCommandHandler();
 
     //process a command from client and return in RESP format
-    std::string processCommand(const std::string command);
+    std::string processCommand(const std::string &commandLine);
 };
 
 
