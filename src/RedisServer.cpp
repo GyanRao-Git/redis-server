@@ -129,6 +129,7 @@ void RedisServer::run(){
             if(t.joinable()){
                 t.join();
             }
+        }
     }
 
     // Before shutting down persist the db. Note: 'fileName' is not defined in this snippet.
