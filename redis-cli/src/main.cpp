@@ -4,6 +4,8 @@
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include<thread>
+#include<chrono>
 
 // For Windows sockets
 #ifdef _WIN32
@@ -20,6 +22,8 @@ typedef int socklen_t;
 #define SOCKET_ERROR -1
 #define closesocket close
 #endif
+
+#define SERVER_RETRY 5
 
 class RedisCli
 {
@@ -188,9 +192,24 @@ public:
 
     void run()
     {
-        if (!connectToServer())
+        for (int attempt = 1; attempt <= SERVER_RETRY; ++attempt)
         {
-            return;
+            if (connectToServer())
+            {
+                std::cout << "Connected!\n";
+                break;
+            }
+
+            if (attempt == SERVER_RETRY)
+            {
+                std::cout << "Could not connect.\n";
+                return;
+            }
+
+            std::cout << "Retry " << attempt << "/" << SERVER_RETRY
+                      << " in 5 seconds...\n";
+
+            std::this_thread::sleep_for(std::chrono::seconds(5));
         }
 
         std::string line;
