@@ -21,6 +21,7 @@ bool RedisDatabase::load(const std::string &fileName){
 }
 
 bool RedisDatabase::dumpIntoDb(const std::string &fileName){
+    //Gets instance and dumps it WITH error handling
     RedisDatabase &db = RedisDatabase::getInstance();
     if(!db.dump(fileName)){
         std::cerr << "Error dumping db \n";

@@ -47,12 +47,24 @@ void RedisServer::shutdown (){
 };
 
 void RedisServer::run(){
+
+    //Need to initilize WSA
+    //WSA = windows socket APIS
+    WSADATA wsaData;
+    int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+
+    if (result != 0) {
+        std::cerr << "WSAStartup failed: " << result << std::endl;
+        return;
+    }
+
     // Create a TCP socket.
     // AF_INET = IPv4, SOCK_STREAM = TCP, 0 = use the default protocol for TCP.
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
 
     if(server_socket<0) {
-        std::cerr<< "Error creating socket\n";
+        int err = WSAGetLastError();
+        std::cerr<< "Error creating socket: "<< err << std::endl;;
         return;
     }
 
@@ -105,6 +117,7 @@ void RedisServer::run(){
             while(true){
                 memset(buffer, 0, sizeof(buffer));
                 int bytes = recv(client_socket, buffer, sizeof(buffer)-1, 0);
+                // std::cout<<"[DEUBG] "<<buffer<<std::endl;
                 if(bytes==0){
                     //No more data will ever come from here
                     //TCP Fin packet is 0
@@ -119,6 +132,7 @@ void RedisServer::run(){
                 }
 
                 std::string request(buffer, bytes);
+                // std::cout<< "[REQUEST] "<< request<<'\n';
                 std::string response = cmdHandler.processCommand(request);
                 send(client_socket, response.c_str(), bytes, 0);
             }
@@ -133,5 +147,5 @@ void RedisServer::run(){
     }
 
     // Before shutting down persist the db. Note: 'fileName' is not defined in this snippet.
-    // RedisDatabase::dumpIntoDb(fileName);
+    RedisDatabase::dumpIntoDb(fileName);
 };

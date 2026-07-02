@@ -3,6 +3,7 @@
 #include <vector>
 #include <sstream>
 #include<algorithm>
+// #include <iostream>
 
 // RESP parser:
 // *2\r\n$4\r\n\PING\r\n$4\r\nTEST\r\n
@@ -66,7 +67,7 @@ std::vector<std::string> parseResp (const std::string &input){
         if(crlf == std::string::npos) break;
 
         int len = std::stoi(input.substr(pos, crlf - pos));
-        pos+=2;
+        pos = crlf + 2;
 
         std::string token = "";
         while(len--){
@@ -74,9 +75,14 @@ std::vector<std::string> parseResp (const std::string &input){
             token += input[pos++];
         }
         tokens.push_back(token);
-        pos+=2; // skip crlf
+        pos +=2 ; // skip crlf
     }
-
+    // for(auto s:tokens){
+    //     std::cout<<"Tokens"<<'\n';
+    //     std::cout<<"->"<<s<<" ";
+    //     std::cout<<"\n";
+    // }
+    
     return tokens;
 };
 
@@ -97,6 +103,7 @@ std::string RedisCommandHandler::processCommand(const std::string& commandLine){
     // RedisDatabase&db = RedisDatabase::getInstance();
 
     if (cmd == "PING") {
+        // std::cout<<"got ping"<<'\n';
         res << "+PONG\r\n";
     }
     else if (cmd == "ECHO") {
