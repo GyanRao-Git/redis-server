@@ -3,7 +3,7 @@
 #include <vector>
 #include <sstream>
 #include<algorithm>
-// #include <iostream>
+#include <iostream>
 
 // RESP parser:
 // *2\r\n$4\r\n\PING\r\n$4\r\nTEST\r\n
@@ -100,17 +100,35 @@ std::string RedisCommandHandler::processCommand(const std::string& commandLine){
 
     std::ostringstream res;
 
-    // RedisDatabase&db = RedisDatabase::getInstance();
+    RedisDatabase& db = RedisDatabase::getInstance();
 
+    // Check commands
+
+    //Common commands
     if (cmd == "PING") {
         // std::cout<<"got ping"<<'\n';
         res << "+PONG\r\n";
     }
     else if (cmd == "ECHO") {
-        res << "TBD\r\n";
-    }
-    else {
-        res << "-ERR: Unknown Command\r\n";
+        if(tokens.size()<2){
+            std::cout<<"got a wrong echo\n";
+            res<< "-ERR: ECHO rquires a message \r\n";
+        }else{
+            res <<"+" << tokens[1]<<"\r\n";
+        }
+    }else if(cmd == "FLUSHALL"){
+        // db.flushAll();
+        res << "+OK\r\n";
+    }    
+
+    // key/value operations
+    else if(cmd == "SET"){
+        if(tokens.size()<3){
+            res<<"SET command needs a key and a value\r\n";
+        }else{
+            db.set(tokens[1], tokens[2]);
+            res<<"+OK\r\n";
+        }
     }
 
     std::string response = res.str();

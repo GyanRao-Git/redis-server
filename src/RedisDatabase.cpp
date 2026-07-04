@@ -122,7 +122,7 @@ bool RedisDatabase::load(const std::string &fileName){
             while(iss>>key_value){
                 std::string key,value;
                 int pos = key_value.find(":");
-                if(pos == std::string::npos){
+                if(pos == (int)std::string::npos){
                     std::cout<<"Invalid key stored: "<<key_value<<'\n';
                     return false;
                 }
@@ -151,4 +151,15 @@ bool RedisDatabase::dumpIntoDb(const std::string &fileName){
     }
     return false;
 }   
+
+void RedisDatabase::set(const std::string& key, const std::string& value){
+    kv_store [key]=value;
+}
+
+std::string RedisDatabase::get(const std::string& key){
+    if (!kv_store.count(key)){
+        return nullptr;
+    }
+    return kv_store[key];
+}
 

@@ -17,6 +17,15 @@ public:
     // get the singleton instance
     static RedisDatabase &getInstance();
 
+    // Common commands
+    // bool flushAll(const std::string &filename);
+    // bool flushAll(); 
+
+    // getters and setters
+    void set(const std::string& key, const std::string& value);
+    std::string get(const std::string& key);
+    
+
     // Persistance: Dump/Load the database from a file
     bool load(const std::string &filename);
     bool dump(const std::string &filename);
