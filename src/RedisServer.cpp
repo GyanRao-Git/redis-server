@@ -11,7 +11,7 @@
 #include<vector>
 #include<thread>
 #include<cstring>
-#include <signal.h>
+#include <signal.h> // used for handling signals like ctrl + c
 
 static RedisServer* globalServer = nullptr;
 
@@ -24,6 +24,7 @@ void signalHandler(int signum){
 }
 
 void RedisServer::setupSignalHandler(){
+    // when a signal comes , execute handler function
     signal(SIGINT, signalHandler);
 }
 
