@@ -19,12 +19,21 @@ public:
 
     // Common commands
     // bool flushAll(const std::string &filename);
-    // bool flushAll(); 
+    bool flushAll(); 
 
     // getters and setters
     void set(const std::string& key, const std::string& value);
-    std::string get(const std::string& key);
-    
+    bool get(const std::string& key, std::string& value);
+
+    std::vector<std::string> keys;
+    std::string type(std::string& key);
+    bool del(const std::string& key);
+    bool expire(const std::string& key, int seconds);
+    void purgeExpired();
+    bool rename(const std::string& oldKey, const std::string& newKey);
+
+    //expire
+    //rename
 
     // Persistance: Dump/Load the database from a file
     bool load(const std::string &filename);

@@ -156,10 +156,11 @@ void RedisDatabase::set(const std::string& key, const std::string& value){
     kv_store [key]=value;
 }
 
-std::string RedisDatabase::get(const std::string& key){
+bool RedisDatabase::get(const std::string& key, std::string& value){
     if (!kv_store.count(key)){
-        return nullptr;
+        return false;
     }
-    return kv_store[key];
+    value = kv_store[key];
+    return true;
 }
 
