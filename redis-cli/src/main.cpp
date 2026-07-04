@@ -129,11 +129,18 @@ public:
             return false;
         }
 
-        int sent = send(sockfd, command.c_str(), command.length(), 0);
-        if (sent == SOCKET_ERROR)
-        {
-            std::cerr << "Error sending command" << std::endl;
-            return false;
+        const char* p = command.c_str();
+        size_t len = command.length();
+        size_t total_sent = 0;
+
+        while (total_sent < len) {
+            int sent = send(sockfd, p + total_sent, len - total_sent, 0);
+            if (sent == SOCKET_ERROR)
+            {
+                std::cerr << "Error sending command" << std::endl;
+                return false;
+            }
+            total_sent += sent;
         }
         return true;
     }
@@ -145,16 +152,46 @@ public:
             return "-ERR Not connected\r\n";
         }
 
-        char buffer[4096] = {0};
-        int received = recv(sockfd, buffer, sizeof(buffer) - 1, 0);
+        std::string response;
+        char buffer[4096];
 
-        if (received == SOCKET_ERROR || received == 0)
-        {
-            return "-ERR Connection lost\r\n";
+        while (true) {
+            fd_set read_fds;
+            FD_ZERO(&read_fds);
+            FD_SET(sockfd, &read_fds);
+
+            struct timeval timeout;
+            timeout.tv_sec = 0;
+            timeout.tv_usec = 100000; // 100ms timeout
+
+            int activity = select(sockfd + 1, &read_fds, NULL, NULL, &timeout);
+
+            if (activity == SOCKET_ERROR) {
+                return "-ERR select() failed\r\n";
+            }
+
+            if (activity == 0) {
+                // Timeout, no more data to read
+                break;
+            }
+
+            if (FD_ISSET(sockfd, &read_fds)) {
+                int received = recv(sockfd, buffer, sizeof(buffer) - 1, 0);
+                if (received > 0) {
+                    buffer[received] = '\0';
+                    response += buffer;
+                } else {
+                    // Error or connection closed
+                    break;
+                }
+            }
         }
 
-        buffer[received] = '\0';
-        return std::string(buffer);
+        if (response.empty()) {
+            return "-ERR Connection lost or no data\r\n";
+        }
+
+        return response;
     }
 
     // Parse RESP response for display

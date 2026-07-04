@@ -4,3 +4,4 @@
 .agents
 build
 *nul
+*my_rdb
