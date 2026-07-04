@@ -2,6 +2,9 @@
 #define REDIS_DATABASE_H
 
 #include<string>
+#include <mutex>
+#include <unordered_map>
+#include<vector>
 
 class RedisDatabase{
 private:
@@ -20,6 +23,14 @@ public:
 
     static bool dumpIntoDb(const std::string &filename);
 
+private:
+    
+    std::mutex db_mutex;   
+
+    // kv_store [key]= value
+    std::unordered_map<std::string, std::string> kv_store;
+    std::unordered_map<std::string, std::vector<std::string>> list_store;
+    std::unordered_map<std::string, std::unordered_map<std::string, std::string>> hash_store;
 };
 
 #endif
